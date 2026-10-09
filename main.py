@@ -40,7 +40,7 @@ def aiProcess(command):
     completion = client.chat.completions.create(
     model="gpt-3.5-turbo",
     messages=[
-        {"role": "system", "content": "You are a virtual assistant named zilo skilled in general tasks like Alexa and Google Cloud. Give short responses please"},
+        {"role": "system", "content": "You are a virtual assistant named xyro skilled in general tasks like Alexa and Google Cloud. Give short responses please"},
         {"role": "user", "content": command}
     ]
     )
@@ -81,21 +81,22 @@ def processCommand(c):
         speak(output) 
 
 if __name__ == "__main__":
-    speak("Initializing Zilo....")
+    speak("Initializing Xyro....")
     while True:
         r = sr.Recognizer()
          
         try:
             with sr.Microphone() as source:
-                audio = r.listen(source, timeout=2, phrase_time_limit=4)
+                # Reverted phrase_time_limit back to 3, kept timeout at 2
+                audio = r.listen(source, timeout=2, phrase_time_limit=3)
             
             word = r.recognize_google(audio)
             
-            if(word.lower() == "zilo"):
+            if(word.lower() == "xyro"):
                 speak("Ya")
                 
                 with sr.Microphone() as source:
-                    print("Zilo Active... Listening for command:")
+                    print("Xyro Active... Listening for command:")
                     audio = r.listen(source, timeout=5, phrase_limit=5) if hasattr(r, 'phrase_limit') else r.listen(source, timeout=5, phrase_time_limit=5)
                     command = r.recognize_google(audio)
                     print(f"Command heard: {command}") 
