@@ -1,167 +1,150 @@
 import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 
-import threading
-import queue
-import time
-import asyncio
-import speech_recognition as sr
-import webbrowser
-import requests
-import pywhatkit
-import edge_tts
-import pygame
+import io
+import re
+import sys
+import traceback
+
 from dotenv import load_dotenv
+load_dotenv()  # Must run before AIBrain reads the API key
 
+import pygame
+import speech_recognition as sr
+from gtts import gTTS
+
+import system_controls
 from ai_brain import AIBrain
+from wake_word import WakeWordDetector
 
-load_dotenv()
+WAKE_WORD = "alfred"
+SLEEP_COMMANDS = {"sleep", "go to sleep", "stop listening"}
+EXIT_COMMANDS = {"exit program", "shut down", "shutdown", "quit"}
+YES_WORDS = {"yes", "yeah", "yep", "sure", "confirm", "ok", "okay"}
+NO_WORDS = {"no", "nope", "not", "dont", "cancel", "stop", "never"}
+YES_PHRASES = ("go ahead", "do it")
+MAX_IDLE_TURNS = 3  # Go back to sleep after this many silent listens in a row
+
 recognizer = sr.Recognizer()
-newsapi = os.getenv("NEWS_API_KEY")
+recognizer.pause_threshold = 1.5
+recognizer.dynamic_energy_threshold = True
 
-pygame.mixer.init()
-brain = AIBrain()
-
-# --- EVENT-DRIVEN AUDIO QUEUE & DUPLEX FLAG ---
-audio_queue = queue.Queue()
-stop_event = threading.Event()
-
-def generate_tts_sync(text, filename):
-    """Wrapper to run asynchronous edge-tts in a synchronous thread."""
-    communicate = edge_tts.Communicate(text, "en-US-ChristopherNeural")
-    asyncio.run(communicate.save(filename))
-
-def audio_worker():
-    """Background thread for high-speed neural TTS playback."""
-    while True:
-        text_to_speak = audio_queue.get()
-        if text_to_speak is None:
-            break 
-            
-        filename = f"temp_{int(time.time())}.mp3"
-        try:
-            # Generate high-quality audio instantly
-            generate_tts_sync(text_to_speak, filename)
-
-            pygame.mixer.music.load(filename)
-            pygame.mixer.music.play()
-
-            # Duplex Barge-in: Check for stop event every 10ms
-            while pygame.mixer.music.get_busy():
-                if stop_event.is_set():
-                    pygame.mixer.music.stop()
-                    stop_event.clear()
-                    break
-                pygame.time.Clock().tick(10)
-                
-            pygame.mixer.music.unload()
-            os.remove(filename) 
-        except Exception as e:
-            print(f"Audio playback error: {e}")
-        finally:
-            audio_queue.task_done()
-
-threading.Thread(target=audio_worker, daemon=True).start()
 
 def speak(text):
-    """Interrupts current speech and queues the new audio."""
-    if pygame.mixer.music.get_busy():
-        stop_event.set()
-    audio_queue.put(text)
-
-def processCommand(c):
-    if c.lower().startswith("play "):
-        song = c[5:].strip()
-        speak(f"Playing {song} on YouTube.")
-        pywhatkit.playonyt(song)
+    """Speaks text aloud using gTTS, played from memory (no temp files)."""
+    if not text:
         return
+    print(f"[Alfred]: {text}")
+    try:
+        audio = io.BytesIO()
+        gTTS(text=text, lang="en").write_to_fp(audio)
+        audio.seek(0)
+        pygame.mixer.music.load(audio, "mp3")
+        pygame.mixer.music.play()
+        clock = pygame.time.Clock()
+        while pygame.mixer.music.get_busy():
+            clock.tick(10)
+        pygame.mixer.music.unload()
+    except Exception as e:
+        print(f"[Audio error]: {e}")
 
-    if "news" in c.lower():
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-        r = requests.get(f"https://newsapi.org/v2/top-headlines?country=us&apiKey={newsapi}", headers=headers)
-        if r.status_code == 200:
-            articles = r.json().get('articles', [])
-            if not articles:
-                speak("I couldn't find any news articles right now.")
-            else:
-                speak("Here are the top headlines.")
-                for i, article in enumerate(articles[:5], 1):
-                    if article.get('title'):
-                        print(f"[Headline {i}]: {article['title']}")
-                        speak(article['title'])
-        return
-        
-    if c.lower().startswith("open "):
-        site = c[5:].strip().replace(" ", "")
-        speak(f"Opening {site}")
-        webbrowser.open(f"https://{site}.com")
-        return
 
-    response = brain.process_input(c)
-    speak(response)
+def listen(timeout=6, phrase_limit=15):
+    """Records one phrase from the microphone and returns it as text."""
+    with sr.Microphone() as source:
+        audio = recognizer.listen(source, timeout=timeout, phrase_time_limit=phrase_limit)
+    return recognizer.recognize_google(audio)
 
-def ai_worker(command):
-    processCommand(command)
+
+def normalize(text):
+    """Lowercases, strips punctuation and removes the wake word."""
+    text = re.sub(r"[^\w\s]", "", text.lower()).replace(WAKE_WORD, "")
+    return " ".join(text.split())
+
+
+def is_yes(answer):
+    """True only for a clear yes. Any negative word ('not sure', 'don't') means no."""
+    text = normalize(answer)
+    words = set(text.split())
+    if words & NO_WORDS:
+        return False
+    return bool(words & YES_WORDS) or any(phrase in text for phrase in YES_PHRASES)
+
+
+def confirm(question, detector):
+    """Asks a yes/no question out loud. Tries offline Vosk first, then Google as a fallback."""
+    speak(question)
+    print("[Confirm] Say yes or no...")
+    try:
+        answer = detector.listen_for_answer()
+    except Exception:
+        print("[Confirm error] Offline listening failed:")
+        traceback.print_exc()
+        try:
+            answer = listen(timeout=5, phrase_limit=4)
+        except Exception as e:
+            print(f"[Confirm error] Fallback listening also failed: {type(e).__name__} {e}")
+            answer = ""
+    print(f"[You]: {answer or '(nothing heard)'}")
+    return is_yes(answer)
+
+
+def active_session(brain):
+    """Handles commands until the user says sleep or stays silent for a while."""
+    idle_turns = 0
+    while idle_turns < MAX_IDLE_TURNS:
+        print("\n[Active] Listening for a command...")
+        try:
+            raw_command = listen()
+        except (sr.WaitTimeoutError, sr.UnknownValueError):
+            idle_turns += 1
+            continue
+        except sr.RequestError as e:
+            print(f"[Speech recognition error]: {e}")
+            speak("I'm having trouble with speech recognition right now.")
+            return
+
+        idle_turns = 0
+        print(f"[You]: {raw_command}")
+        command = normalize(raw_command)
+
+        if not command:
+            speak("Yes?")
+            continue
+        if command in SLEEP_COMMANDS:
+            speak("Going to sleep.")
+            return
+        if command in EXIT_COMMANDS:
+            speak("Shutting down. Goodbye.")
+            pygame.mixer.quit()
+            sys.exit(0)
+
+        speak(brain.process_input(command))
+
+    print("[Active] No speech for a while. Going back to sleep.")
+
+
+def main():
+    pygame.mixer.init()
+    brain = AIBrain()
+    detector = WakeWordDetector(WAKE_WORD)
+    system_controls.confirm_callback = lambda question: confirm(question, detector)
+
+    with sr.Microphone() as source:
+        print("[System] Calibrating microphone for room noise, please stay quiet...")
+        recognizer.adjust_for_ambient_noise(source, duration=1.0)
+
+    speak("Alfred is online. Say Alfred when you need me.")
+
+    while True:
+        print("\n[Passive] Waiting for the wake word...")
+        detector.wait()
+        speak("Yes?")
+        active_session(brain)
+
 
 if __name__ == "__main__":
-    speak("Initializing Alfred with neural voice.")
-    while True:
-        r = sr.Recognizer()
-        r.pause_threshold = 1.0 # Shortened for faster duplex listening
-        
-        try:
-            with sr.Microphone() as source:
-                print("\n[Passive Mode] Listening for wake word...")
-                audio = r.listen(source, timeout=2, phrase_time_limit=3)
-            
-            word = r.recognize_google(audio)
-            
-            if word.lower().strip() == "alfred":
-                # Immediately halt any currently playing audio (Duplex capability)
-                stop_event.set()
-                speak("Yes?")
-                
-                while True:
-                    try:
-                        with sr.Microphone() as source:
-                            print("\n[Alfred Active] Listening for command...")
-                            audio = r.listen(source, timeout=5, phrase_time_limit=8)
-                        
-                        raw_command = r.recognize_google(audio)
-                        print(f"Command heard: {raw_command}") 
-                        
-                        if raw_command.lower().strip() == "alfred":
-                            stop_event.set()
-                            speak("Yes?")
-                            continue
-                        
-                        command = raw_command.lower().replace("alfred", "").strip()
-                        
-                        if command in ["stop", "quiet", "shut up", "cancel"]:
-                            stop_event.set()
-                            continue
-                        
-                        if not command:
-                            continue
-                        
-                        if command in ["sleep", "go to sleep", "stop listening"]:
-                            speak("Going to sleep.")
-                            break 
-                            
-                        if command in ["exit program", "shut down", "shutdown", "quit"]:
-                            speak("Shutting down. Goodbye.")
-                            audio_queue.put(None) 
-                            time.sleep(2)
-                            exit() 
-                        
-                        threading.Thread(target=ai_worker, args=(command,), daemon=True).start()
-
-                    except sr.WaitTimeoutError:
-                        pass 
-                    except sr.UnknownValueError:
-                        pass 
-
-        except sr.WaitTimeoutError:
-            pass 
-        except sr.UnknownValueError:
-            pass
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n[System] Stopped by user.")
