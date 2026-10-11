@@ -1,0 +1,13 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Files Alfred creates at runtime
+screenshots/
+notes.txt
+memory.json
