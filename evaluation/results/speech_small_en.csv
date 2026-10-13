@@ -1,0 +1,31 @@
+file,text,condition,heard,status,errors,ref_words,seconds
+clip01.wav,lock my pc,quiet,Lock my PC,clear,0,3,1.937
+clip02.wav,mute,quiet,mute.,clear,0,1,1.929
+clip03.wav,news,quiet,news,unclear,0,1,22.028
+clip04.wav,screenshot,quiet,screenshot.,clear,0,1,30.912
+clip05.wav,set the volume to 40,quiet,set the volume to 40.,clear,0,5,2.185
+clip06.wav,turn the volume up a little,quiet,turn the volume up a little,clear,0,6,2.264
+clip07.wav,take a screenshot,quiet,take a screenshot,clear,0,3,2.266
+clip08.wav,read my clipboard,quiet,read my clipboard,clear,0,3,2.323
+clip09.wav,open github,quiet,open GitHub,clear,0,2,2.136
+clip10.wav,open wikipedia,quiet,open Wikipedia,clear,0,2,2.053
+clip11.wav,play shape of you on youtube,quiet,Play shape of you on YouTube,clear,0,6,2.037
+clip12.wav,put on something relaxing,quiet,put on something relaxing,clear,0,4,2.065
+clip13.wav,make a note to call the bank tomorrow,quiet,make a note to call the band tomorrow,clear,1,8,2.073
+clip14.wav,remember my exam is on friday,quiet,my exam is on Friday.,clear,1,6,2.047
+clip15.wav,what do you remember about me,quiet,What do you remember about me?,clear,0,6,2.115
+clip16.wav,forget about the exam,quiet,forget about the exam,clear,0,4,2.04
+clip17.wav,what is recursion,quiet,what is recursion?,clear,0,3,2.286
+clip18.wav,how many days until the weekend,quiet,how many days until the weekend?,clear,0,6,2.145
+clip19.wav,go to sleep,quiet,Go to see.,clear,1,3,1.957
+clip20.wav,quit,quiet,quit.,clear,0,1,1.918
+clip21.wav,yes,quiet,Yes.,clear,0,1,1.932
+clip22.wav,no,quiet,no,clear,0,1,1.9
+clip23.wav,can you tell me the top headlines for today please,quiet,can you tell me the top headlines for today please?,clear,0,10,2.062
+clip24.wav,i need to finish my project report before monday so please remember that,quiet,"I need to finish my project report before Monday, so please remember that.",clear,0,13,2.146
+clip25.wav,lock my pc,noisy,lock my PC.,clear,0,3,41.58
+clip26.wav,mute,noisy,mute,clear,0,1,1.899
+clip27.wav,set the volume to 30,noisy,set the volume to 30,clear,0,5,1.98
+clip28.wav,open youtube,noisy,open YouTube,clear,0,2,1.885
+clip29.wav,what is the capital of japan,noisy,What is capital of Japan?,clear,1,6,2.13
+clip30.wav,take a screenshot,noisy,Take a screenshot,clear,0,3,1.968

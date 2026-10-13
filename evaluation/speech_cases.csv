@@ -1,0 +1,31 @@
+file,text,condition
+clip01.wav,lock my pc,quiet
+clip02.wav,mute,quiet
+clip03.wav,news,quiet
+clip04.wav,screenshot,quiet
+clip05.wav,set the volume to 40,quiet
+clip06.wav,turn the volume up a little,quiet
+clip07.wav,take a screenshot,quiet
+clip08.wav,read my clipboard,quiet
+clip09.wav,open github,quiet
+clip10.wav,open wikipedia,quiet
+clip11.wav,play shape of you on youtube,quiet
+clip12.wav,put on something relaxing,quiet
+clip13.wav,make a note to call the bank tomorrow,quiet
+clip14.wav,remember my exam is on friday,quiet
+clip15.wav,what do you remember about me,quiet
+clip16.wav,forget about the exam,quiet
+clip17.wav,what is recursion,quiet
+clip18.wav,how many days until the weekend,quiet
+clip19.wav,go to sleep,quiet
+clip20.wav,quit,quiet
+clip21.wav,yes,quiet
+clip22.wav,no,quiet
+clip23.wav,can you tell me the top headlines for today please,quiet
+clip24.wav,i need to finish my project report before monday so please remember that,quiet
+clip25.wav,lock my pc,noisy
+clip26.wav,mute,noisy
+clip27.wav,set the volume to 30,noisy
+clip28.wav,open youtube,noisy
+clip29.wav,what is the capital of japan,noisy
+clip30.wav,take a screenshot,noisy

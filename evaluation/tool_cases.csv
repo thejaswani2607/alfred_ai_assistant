@@ -1,0 +1,39 @@
+command,expected_tool,category
+lock my pc,lock_pc,system
+lock the computer,lock_pc,system
+take a screenshot,take_screenshot,system
+screenshot,take_screenshot,system
+capture my screen,take_screenshot,system
+read my clipboard,get_clipboard,system
+what did I copy,get_clipboard,system
+mute,mute_volume,volume
+unmute the sound,mute_volume,volume
+set the volume to 40,set_volume_percent,volume
+volume 70 percent,set_volume_percent,volume
+it's too loud,change_volume_by|set_volume_percent,volume
+turn it up a little,change_volume_by,volume
+make it quieter,change_volume_by|set_volume_percent,volume
+play shape of you,play_youtube,media
+put on something relaxing,play_youtube,media
+play lofi music on youtube,play_youtube,media
+I want to listen to some old Bollywood songs,play_youtube,media
+news,get_top_headlines,media
+what's happening in the world today,get_top_headlines,media
+give me the top headlines,get_top_headlines,media
+open github,open_website,web
+open wikipedia,open_website,web
+take me to stackoverflow.com,open_website,web
+make a note to call the bank tomorrow,write_note,notes
+note that the meeting moved to 5 pm,write_note,notes
+remember my exam is on friday,remember_fact,memory
+remember that I like dark chocolate,remember_fact,memory
+what do you remember about me,recall_facts|none,memory
+forget about the exam,forget_fact,memory
+what is recursion,none,chat
+how many days are there in a leap year,none,chat
+tell me a joke,none,chat
+what is the capital of japan,none,chat
+banana,none,unclear
+the of in,none,unclear
+set the volume to,none,unclear
+play,none,unclear

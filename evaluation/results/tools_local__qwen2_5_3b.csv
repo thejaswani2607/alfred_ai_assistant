@@ -1,0 +1,39 @@
+command,expected_tool,category,chosen,args,passed,seconds
+lock my pc,lock_pc,system,lock_pc,{},True,25.635
+lock the computer,lock_pc,system,lock_pc,{},True,1.715
+take a screenshot,take_screenshot,system,take_screenshot,{},True,1.723
+screenshot,take_screenshot,system,take_screenshot,{},True,1.647
+capture my screen,take_screenshot,system,take_screenshot,{},True,1.634
+read my clipboard,get_clipboard,system,get_clipboard,{},True,1.635
+what did I copy,get_clipboard,system,get_clipboard,{},True,1.657
+mute,mute_volume,volume,mute_volume,{},True,1.503
+unmute the sound,mute_volume,volume,mute_volume,{},True,1.629
+set the volume to 40,set_volume_percent,volume,set_volume_percent,{'percent': 40},True,2.281
+volume 70 percent,set_volume_percent,volume,set_volume_percent,{'percent': 70},True,2.218
+it's too loud,change_volume_by|set_volume_percent,volume,none,{},False,1.12
+turn it up a little,change_volume_by,volume,change_volume_by,{'delta': 15},True,2.1
+make it quieter,change_volume_by|set_volume_percent,volume,none,{},False,1.123
+play shape of you,play_youtube,media,play_youtube,{'query': 'shape of you'},True,2.126
+put on something relaxing,play_youtube,media,none,{},False,0.995
+play lofi music on youtube,play_youtube,media,play_youtube,{'query': 'lofi music'},True,2.208
+I want to listen to some old Bollywood songs,play_youtube,media,play_youtube,{'query': 'old Bollywood songs'},True,2.232
+news,get_top_headlines,media,none,{},False,2.293
+what's happening in the world today,get_top_headlines,media,none,{},False,1.034
+give me the top headlines,get_top_headlines,media,get_top_headlines,{},True,1.764
+open github,open_website,web,open_website,{'site': 'github'},True,1.826
+open wikipedia,open_website,web,open_website,{'site': 'wikipedia'},True,1.877
+take me to stackoverflow.com,open_website,web,open_website,{'site': 'stackoverflow.com'},True,2.081
+make a note to call the bank tomorrow,write_note,notes,write_note,{'note_text': 'Remember to call the bank tomorrow.'},True,2.526
+note that the meeting moved to 5 pm,write_note,notes,write_note,{'note_text': 'Meeting moved to 5 pm'},True,2.5
+remember my exam is on friday,remember_fact,memory,remember_fact,{'fact': 'my exam is on friday'},True,2.28
+remember that I like dark chocolate,remember_fact,memory,remember_fact,{'fact': 'I remember you like dark chocolate.'},True,2.422
+what do you remember about me,recall_facts|none,memory,recall_facts,{},True,1.875
+forget about the exam,forget_fact,memory,forget_fact,{'keyword': 'exam'},True,2.003
+what is recursion,none,chat,none,{},True,3.35
+how many days are there in a leap year,none,chat,none,{},True,1.259
+tell me a joke,none,chat,none,{},True,1.478
+what is the capital of japan,none,chat,none,{},True,0.964
+banana,none,unclear,none,{},True,1.848
+the of in,none,unclear,none,{},True,2.663
+set the volume to,none,unclear,none,{},True,1.151
+play,none,unclear,none,{},True,2.033
